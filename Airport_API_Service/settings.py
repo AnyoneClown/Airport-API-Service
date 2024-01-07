@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework_simplejwt",
+    "djoser",
     "rest_framework",
     "debug_toolbar",
     "user",
@@ -139,3 +140,20 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     )
 }
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
+EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+DJOSER = {
+    "USER_ID_FIELD": "email",
+    "LOGIN_FIELD": "email",
+    "SEND_ACTIVATION_EMAIL": True,
+    "SEND_CONFIRMATION_EMAIL": True,
+    "ACTIVATION_URL": "api/users/activate/{uid}/{token}",
+    "SERIALIZERS": {}
+}
+
+SITE_NAME = "Airport API Service"
