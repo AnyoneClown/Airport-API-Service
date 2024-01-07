@@ -1,16 +1,24 @@
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
-
-from user.serializers import UserSerializer
-
-
-class CreateUserView(generics.CreateAPIView):
-    serializer_class = UserSerializer
+from djoser.views import UserViewSet
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
-class ManageUserView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated,)
+class ActivateUserView(UserViewSet):
+    """ Custom authentication system via Email verification link"""
 
-    def get_object(self):
-        return self.request.user
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault("context", self.get_serializer_context())
+
+        kwargs["data"] = {
+            "uid": self.kwargs["uid"],
+            "token": self.kwargs["token"],
+        }
+
+        return serializer_class(*args, **kwargs)
+
+    @action(["post"], detail=False)
+    def activation(self, request, uid, token, *args, **kwargs):
+        super().activation(request, *args, **kwargs)
+        return Response(status=status.HTTP_204_NO_CONTENT)
