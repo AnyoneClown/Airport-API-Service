@@ -1,6 +1,8 @@
+from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from airport.models import AirplaneType, Airplane, Airport, Route
+from airport.models import AirplaneType, Airplane, Airport, Route, Ticket, Order, Flight
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -38,25 +40,80 @@ class RouteSerializer(serializers.ModelSerializer):
         model = Route
         fields = ("id", "source", "destination", "distance")
 
-    def validate(self, data):
-        source = data.get("source")
-        destination = data.get("destination")
-        distance = data.get("distance")
-
-        existing_routes = Route.objects.filter(source=source, destination=destination).only("source", "destination")
-        if existing_routes.exists():
-            raise serializers.ValidationError("Route with the same source and destination already exists.")
-
-        reverse_routes = Route.objects.filter(source=destination, destination=source).only("source", "destination", "distance")
-        if reverse_routes.exists() and reverse_routes[0].distance != distance:
-            raise serializers.ValidationError("Reverse route has different distance. Please, provide correct distance.")
-
-        if source == destination:
-            raise serializers.ValidationError("Source and destination airports must be different.")
-
+    def validate(self, attrs):
+        data = super(RouteSerializer, self).validate(attrs=attrs)
+        Route.validate_route(
+            attrs["source"],
+            attrs["destination"],
+            attrs["distance"]
+        )
         return data
 
 
 class RouteListSerializer(RouteSerializer):
     source = serializers.CharField(source="source.name")
     destination = serializers.CharField(source="destination.name")
+
+
+class FlightSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "departure_time", "arrival_time")
+
+
+class FlightListSerializer(FlightSerializer):
+    source = serializers.CharField(source="route.source", read_only=True)
+    destination = serializers.CharField(source="route.destination", read_only=True)
+    airplane = serializers.CharField(source="airplane.name")
+    airplane_capacity = serializers.CharField(source="airplane.capacity", read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = ("id", "source", "destination", "airplane", "airplane_capacity", "departure_time", "arrival_time")
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        data = super(TicketSerializer, self).validate(attrs=attrs)
+        Ticket.validate_ticket(
+            attrs["row"],
+            attrs["seat"],
+            attrs["flight"].airplane,
+            ValidationError,
+        )
+        return data
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight")
+
+
+class TicketListSerializer(TicketSerializer):
+    flight = FlightListSerializer(many=False, read_only=True)
+
+
+class TicketSeatsSerializer(TicketSerializer):
+    class Meta:
+        model = Ticket
+        fields = ("row", "seat")
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = ("id", "tickets", "created_at")
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets")
+            order = Order.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=order, **ticket_data)
+            return order
+
+
+class OrderListSerializer(OrderSerializer):
+    tickets = TicketListSerializer(many=True, read_only=True)
