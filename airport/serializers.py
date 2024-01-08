@@ -39,8 +39,21 @@ class RouteSerializer(serializers.ModelSerializer):
         fields = ("id", "source", "destination", "distance")
 
     def validate(self, data):
-        if data["source"] == data["destination"]:
+        source = data.get("source")
+        destination = data.get("destination")
+        distance = data.get("distance")
+
+        existing_routes = Route.objects.filter(source=source, destination=destination).only("source", "destination")
+        if existing_routes.exists():
+            raise serializers.ValidationError("Route with the same source and destination already exists.")
+
+        reverse_routes = Route.objects.filter(source=destination, destination=source).only("source", "destination", "distance")
+        if reverse_routes.exists() and reverse_routes[0].distance != distance:
+            raise serializers.ValidationError("Reverse route has different distance. Please, provide correct distance.")
+
+        if source == destination:
             raise serializers.ValidationError("Source and destination airports must be different.")
+
         return data
 
 
