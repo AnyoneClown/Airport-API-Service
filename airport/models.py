@@ -18,6 +18,10 @@ class Airplane(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    @property
+    def capacity(self):
+        return self.rows * self.seats_in_row
+
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
