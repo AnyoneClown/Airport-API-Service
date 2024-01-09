@@ -1,10 +1,12 @@
+from django.db.models import F, Count
 from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from airport.models import AirplaneType, Airplane, Airport, Route, Flight
+from airport.models import AirplaneType, Airplane, Airport, Route, Flight, Order, Crew
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import AirplaneTypeSerializer, AirplaneSerializer, AirplaneListSerializer, AirportSerializer, \
-    RouteSerializer, RouteListSerializer, FlightSerializer, FlightListSerializer
+    RouteSerializer, RouteListSerializer, FlightSerializer, FlightListSerializer, OrderSerializer, OrderListSerializer, \
+    FlightDetailSerializer, CrewSerializer
 
 
 class AirplaneTypeViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):
@@ -30,6 +32,12 @@ class AirportViewSet(ModelViewSet):
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
+class CrewViewSet(ModelViewSet):
+    queryset = Crew.objects.all()
+    serializer_class = CrewSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
 class RouteViewSet(ModelViewSet):
     queryset = Route.objects.select_related("source", "destination")
     serializer_class = RouteSerializer
@@ -42,11 +50,35 @@ class RouteViewSet(ModelViewSet):
 
 
 class FlightViewSet(ModelViewSet):
-    queryset = Flight.objects.select_related("route__source", "route__destination", "airplane")
+    queryset = Flight.objects.select_related("route__destination", "route__source", "airplane").prefetch_related("crew").annotate(
+            tickets_available=(
+                F("airplane__rows") * F("airplane__seats_in_row")
+                - Count("tickets")
+            )
+        )
     serializer_class = FlightSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve"):
+        if self.action == "list":
             return FlightListSerializer
+        if self.action == "retrieve":
+            return FlightDetailSerializer
         return self.serializer_class
+
+
+class OrderViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+    queryset = Order.objects.prefetch_related("tickets__flight__source__name", "tickets__flight__destination__name")
+    serializer_class = OrderSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).prefetch_related("tickets__flight__route")
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OrderListSerializer
+        return self.serializer_class
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
