@@ -1,4 +1,6 @@
 from django.db.models import F, Count
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
@@ -39,6 +41,19 @@ class AirportViewSet(ModelViewSet):
             queryset = queryset.filter(closest_big_city__icontains=city)
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "city",
+                description="Filter by closest_big_city (ex. ?city=Paris)",
+                required=False,
+                type=str,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class CrewViewSet(ModelViewSet):
     queryset = Crew.objects.all()
@@ -59,6 +74,25 @@ class CrewViewSet(ModelViewSet):
             )
 
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "first_name",
+                description="Filter by first name (ex. ?first_name=David)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                "last_name",
+                description="Filter by last name (ex. ?last_name=Johnson)",
+                required=False,
+                type=str,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class RouteViewSet(ModelViewSet):
@@ -85,6 +119,25 @@ class RouteViewSet(ModelViewSet):
         if self.action in ("list", "retrieve"):
             return RouteListSerializer
         return self.serializer_class
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                description="Filter by source (ex. ?source=Paris)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                "destination",
+                description="Filter by destination (ex. ?destination=London)",
+                required=False,
+                type=str,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class FlightViewSet(ModelViewSet):
@@ -126,6 +179,32 @@ class FlightViewSet(ModelViewSet):
         if self.action == "retrieve":
             return FlightDetailSerializer
         return self.serializer_class
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                description="Filter by source (ex. ?source=Paris)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                "destination",
+                description="Filter by destination (ex. ?destination=London)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                "date",
+                description="Filter by departure_date (ex. ?date=24-10-08)",
+                required=False,
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class OrderViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
