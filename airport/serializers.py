@@ -54,15 +54,6 @@ class RouteSerializer(serializers.ModelSerializer):
         model = Route
         fields = ("id", "source", "destination", "distance")
 
-    def validate(self, attrs):
-        data = super(RouteSerializer, self).validate(attrs=attrs)
-        Route.validate_route(
-            attrs["source"],
-            attrs["destination"],
-            attrs["distance"]
-        )
-        return data
-
 
 class RouteListSerializer(RouteSerializer):
     source = serializers.CharField(source="source.name")
