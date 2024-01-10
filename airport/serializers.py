@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -65,6 +66,28 @@ class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time")
+
+    def validate(self, data):
+        super().validate(data)
+
+        departure_time = data.get("departure_time")
+        arrival_time = data.get("arrival_time")
+        allow_create_time = timezone.now() + timezone.timedelta(days=1)
+        allow_update_time = timezone.now()
+
+        if self.instance is None:
+            if departure_time < allow_create_time:
+                raise serializers.ValidationError(
+                    "Flights must be created no later than a day before departure"
+                )
+        else:
+            if departure_time < allow_update_time:
+                raise serializers.ValidationError("Departure time must be in future")
+
+        if arrival_time <= departure_time:
+            raise ValidationError("Arrival time must be later than departure time.")
+
+        return data
 
 
 class FlightListSerializer(FlightSerializer):
