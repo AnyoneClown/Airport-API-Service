@@ -45,6 +45,21 @@ class CrewViewSet(ModelViewSet):
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_queryset(self):
+        queryset = self.queryset
+        first_name = self.request.query_params.get("first_name")
+        last_name = self.request.query_params.get("last_name")
+
+        if first_name:
+            queryset = queryset.filter(first_name__icontains=first_name)
+
+        if last_name:
+            queryset = queryset.filter(
+                last_name__icontains=last_name
+            )
+
+        return queryset
+
 
 class RouteViewSet(ModelViewSet):
     queryset = Route.objects.select_related("source", "destination")
