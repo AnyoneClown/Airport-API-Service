@@ -38,7 +38,9 @@ class Order(models.Model):
 class Ticket(models.Model):
     row = models.IntegerField()
     seat = models.IntegerField()
-    flight = models.ForeignKey("Flight", on_delete=models.CASCADE, related_name="tickets")
+    flight = models.ForeignKey(
+        "Flight", on_delete=models.CASCADE, related_name="tickets"
+    )
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
     @staticmethod
@@ -52,9 +54,9 @@ class Ticket(models.Model):
                 raise error_to_raise(
                     {
                         ticket_attr_name: f"{ticket_attr_name} "
-                                          f"number must be in available range: "
-                                          f"(1, {airplane_attr_name}): "
-                                          f"(1, {count_attrs})"
+                        f"number must be in available range: "
+                        f"(1, {airplane_attr_name}): "
+                        f"(1, {count_attrs})"
                     }
                 )
 
@@ -67,11 +69,11 @@ class Ticket(models.Model):
         )
 
     def save(
-            self,
-            force_insert=False,
-            force_update=False,
-            using=None,
-            update_fields=None,
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
     ):
         self.full_clean()
         return super(Ticket, self).save(
@@ -79,9 +81,7 @@ class Ticket(models.Model):
         )
 
     def __str__(self):
-        return (
-            f"{str(self.flight)} (row: {self.row}, seat: {self.seat})"
-        )
+        return f"{str(self.flight)} (row: {self.row}, seat: {self.seat})"
 
     class Meta:
         unique_together = ("flight", "row", "seat")
@@ -97,50 +97,54 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_routes")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
+    source = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="source_routes"
+    )
+    destination = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="destination_routes"
+    )
     distance = models.IntegerField()
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["source", "destination"], name="unique_source_destination")
+            models.UniqueConstraint(
+                fields=["source", "destination"], name="unique_source_destination"
+            )
         ]
 
     @staticmethod
     def validate_route(source, destination, distance):
         existing_routes = Route.objects.filter(
-            models.Q(source=source, destination=destination) |
-            models.Q(source=destination, destination=source)
+            models.Q(source=source, destination=destination)
+            | models.Q(source=destination, destination=source)
         ).select_related("source", "destination")
 
         if existing_routes.exists():
-            raise ValidationError("Route with the same source and destination already exists.")
+            raise ValidationError(
+                "Route with the same source and destination already exists."
+            )
 
         if source == destination:
             raise ValidationError("Source and destination airports must be different.")
 
         reverse_route = existing_routes.first()
         if reverse_route and reverse_route.distance != distance:
-            raise ValidationError("Reverse route has different distance. Please, provide correct distance.")
+            raise ValidationError(
+                "Reverse route has different distance. Please, provide correct distance."
+            )
 
     def clean(self):
-        Route.validate_route(
-            self.source,
-            self.destination,
-            self.distance
-        )
+        Route.validate_route(self.source, self.destination, self.distance)
 
     def save(
-            self,
-            force_insert=False,
-            force_update=False,
-            using=None,
-            update_fields=None,
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
     ):
         self.full_clean()
-        return super(Route, self).save(
-            force_insert, force_update, using, update_fields
-        )
+        return super(Route, self).save(force_insert, force_update, using, update_fields)
 
     def __str__(self) -> str:
         return f"From: {self.source} - to: {self.destination}"
@@ -159,7 +163,9 @@ class Crew(models.Model):
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flights")
-    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE, related_name="flights")
+    airplane = models.ForeignKey(
+        Airplane, on_delete=models.CASCADE, related_name="flights"
+    )
     crew = models.ManyToManyField(Crew, related_name="flights")
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()

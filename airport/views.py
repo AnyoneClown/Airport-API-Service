@@ -6,12 +6,25 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from airport.models import AirplaneType, Airplane, Airport, Route, Flight, Order, Crew
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
-from airport.serializers import AirplaneTypeSerializer, AirplaneSerializer, AirplaneListSerializer, AirportSerializer, \
-    RouteSerializer, RouteListSerializer, FlightSerializer, FlightListSerializer, OrderSerializer, OrderListSerializer, \
-    FlightDetailSerializer, CrewSerializer
+from airport.serializers import (
+    AirplaneTypeSerializer,
+    AirplaneSerializer,
+    AirplaneListSerializer,
+    AirportSerializer,
+    RouteSerializer,
+    RouteListSerializer,
+    FlightSerializer,
+    FlightListSerializer,
+    OrderSerializer,
+    OrderListSerializer,
+    FlightDetailSerializer,
+    CrewSerializer,
+)
 
 
-class AirplaneTypeViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):
+class AirplaneTypeViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet
+):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -69,9 +82,7 @@ class CrewViewSet(ModelViewSet):
             queryset = queryset.filter(first_name__icontains=first_name)
 
         if last_name:
-            queryset = queryset.filter(
-                last_name__icontains=last_name
-            )
+            queryset = queryset.filter(last_name__icontains=last_name)
 
         return queryset
 
@@ -141,12 +152,15 @@ class RouteViewSet(ModelViewSet):
 
 
 class FlightViewSet(ModelViewSet):
-    queryset = Flight.objects.select_related("route__destination", "route__source", "airplane").prefetch_related("crew").annotate(
+    queryset = (
+        Flight.objects.select_related("route__destination", "route__source", "airplane")
+        .prefetch_related("crew")
+        .annotate(
             tickets_available=(
-                F("airplane__rows") * F("airplane__seats_in_row")
-                - Count("tickets")
+                F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
             )
         )
+    )
     serializer_class = FlightSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -208,12 +222,16 @@ class FlightViewSet(ModelViewSet):
 
 
 class OrderViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
-    queryset = Order.objects.prefetch_related("tickets__flight__source__name", "tickets__flight__destination__name")
+    queryset = Order.objects.prefetch_related(
+        "tickets__flight__source__name", "tickets__flight__destination__name"
+    )
     serializer_class = OrderSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).prefetch_related("tickets__flight__route")
+        return Order.objects.filter(user=self.request.user).prefetch_related(
+            "tickets__flight__route"
+        )
 
     def get_serializer_class(self):
         if self.action == "list":

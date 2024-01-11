@@ -3,32 +3,37 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from airport.models import AirplaneType, Airplane, Airport, Route, Ticket, Order, Flight, Crew
+from airport.models import (
+    AirplaneType,
+    Airplane,
+    Airport,
+    Route,
+    Ticket,
+    Order,
+    Flight,
+    Crew,
+)
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = AirplaneType
         fields = ("id", "name")
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Airplane
         fields = ("id", "name", "rows", "seats_in_row", "airplane_type")
 
 
 class CrewSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Crew
         fields = ("id", "first_name", "last_name")
 
 
 class CrewListSerializer(CrewSerializer):
-
     class Meta:
         model = Crew
         fields = ("first_name", "last_name")
@@ -43,14 +48,12 @@ class AirplaneListSerializer(serializers.ModelSerializer):
 
 
 class AirportSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Airport
         fields = ("id", "name", "closest_big_city")
 
 
 class RouteSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance")
@@ -62,7 +65,6 @@ class RouteListSerializer(RouteSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time")
@@ -94,13 +96,25 @@ class FlightListSerializer(FlightSerializer):
     source = serializers.CharField(source="route.source.name", read_only=True)
     destination = serializers.CharField(source="route.destination.name", read_only=True)
     airplane = serializers.CharField(source="airplane.name")
-    airplane_capacity = serializers.CharField(source="airplane.capacity", read_only=True)
+    airplane_capacity = serializers.CharField(
+        source="airplane.capacity", read_only=True
+    )
     tickets_available = serializers.IntegerField(read_only=True)
     crew = CrewListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Flight
-        fields = ("id", "source", "destination", "airplane", "airplane_capacity", "tickets_available", "departure_time", "arrival_time", "crew")
+        fields = (
+            "id",
+            "source",
+            "destination",
+            "airplane",
+            "airplane_capacity",
+            "tickets_available",
+            "departure_time",
+            "arrival_time",
+            "crew",
+        )
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -137,7 +151,15 @@ class FlightDetailSerializer(FlightSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "taken_places", "crew")
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+            "taken_places",
+            "crew",
+        )
 
 
 class OrderSerializer(serializers.ModelSerializer):

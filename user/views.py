@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 
 class ActivateUserView(UserViewSet):
-    """ Custom authentication system via Email verification link"""
+    """Custom authentication system via Email verification link"""
 
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()

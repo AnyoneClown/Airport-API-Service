@@ -145,28 +145,25 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle"
+        "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/day",
-        "user": "1000/day"
-    },
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Airport Service API',
-    'DESCRIPTION': 'Flight tracking service providing information on aircraft movements worldwide',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "Airport Service API",
+    "DESCRIPTION": "Flight tracking service providing information on aircraft movements worldwide",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": False
+    "ROTATE_REFRESH_TOKENS": False,
 }
 
 EMAIL_HOST = "smtp.gmail.com"
@@ -181,8 +178,7 @@ DJOSER = {
     "SEND_ACTIVATION_EMAIL": True,
     "SEND_CONFIRMATION_EMAIL": True,
     "ACTIVATION_URL": "api/users/activate/{uid}/{token}",
-    "SERIALIZERS": {}
+    "SERIALIZERS": {},
 }
 
 SITE_NAME = "Airport API Service"
-
