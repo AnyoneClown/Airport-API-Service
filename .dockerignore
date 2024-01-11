@@ -1,0 +1,5 @@
+venv
+.gitignore
+.flake8
+README.md
+.env.sample
