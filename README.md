@@ -123,6 +123,6 @@ I welcome contributions to make this project even better. If you're interested i
 By following these guidelines, you'll contribute to the success of the Airport Api Service project. Thank you for your contributions!
 
 ## API Endpoints Overview
-![Swagger1](Swagger1.png)
-![Swagger2](Swagger2.png)
-![Swagger3](Swagger3.png)
+![Swagger1](images/Swagger1.png)
+![Swagger2](images/Swagger2.png)
+![Swagger3](images/Swagger3.png)
