@@ -25,21 +25,21 @@ Welcome to the Airport Api Service! This web application provides a comprehensiv
 7. **Task Management:**
    Efficiently manage tasks, including:
 
-    - **Orders and Tickets:**
+    - **Orders and Tickets**
 
-    - **Creating Airplanes, Airports, Routes, Crew:**
+    - **Creating Airplanes, Airports, Routes, Crew**
 
-    - **Managing Flights:**
+    - **Managing Flights**
 
-    - **Adding Flights with Crew:**
+    - **Adding Flights with Crew**
 
-    - **Filtering Airports by City:**
+    - **Filtering Airports by City**
 
-    - **Filtering Routes by Source, Destination:**
+    - **Filtering Routes by Source, Destination**
 
-    - **Filtering Flights by Routes, Date:**
+    - **Filtering Flights by Routes, Date**
 
-    - **Filtering Crew by First Name, Last Name:**
+    - **Filtering Crew by First Name, Last Name**
 
 
 ## Getting Started
