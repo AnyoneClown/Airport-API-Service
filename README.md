@@ -1,6 +1,6 @@
 # Airport Api Service
 
-Welcome to the Airport Api Service! This web application provides a comprehensive platform for managing tasks and user accounts within the aviation domain. Below is an enhanced guide to help you get started and contribute to the project.
+Welcome to the Airport Api Service! This project showcases your proficiency in designing and implementing a comprehensive API solution for airport-related functionalities. Below is an enhanced guide to help you get started and contribute to the project.
 
 # Features
 
